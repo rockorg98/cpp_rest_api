@@ -11,4 +11,3 @@ A lightweight and modular REST API built in modern C++ using the [Crow](https://
 - 🔒 Thread-safe with `std::mutex`
 - 📁 Modular design using a `ProductManager` class
 - 🧱 Built with `CMake`, ready for CI/CD and Docker
-- 🏷️ Tagged per day: `day-1`, `day-2`, ..., `day-4`

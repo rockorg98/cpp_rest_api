@@ -2,27 +2,14 @@
 #include "vector"
 #include "mutex"
 #include "string"
+#include "product_manager.h"
+#include "product.h"
 using namespace std;
-
-struct product
-{
-    public:
-	int m_nId;
-	std::string m_sName;
-	int m_nPrice;
-	
-    product(int id,std::string name,int price):m_nId(id),m_sName(name),m_nPrice(price){
-    }
-};
-
-vector<product> vProdList;
-std::mutex mtx;
-
-int next_id = 0;
 
 int main() {
     crow::SimpleApp app;  
-
+	
+    ProductManager productManager;
     // GET /hello
     CROW_ROUTE(app, "/hello")([] {
         crow::json::wvalue response;
@@ -31,22 +18,23 @@ int main() {
     });
 
 
-    CROW_ROUTE(app, "/products")([] 
+    CROW_ROUTE(app, "/products")([&productManager] 
     {
         crow::json::wvalue response;
+	auto productList = productManager.getAllProducts();
 	
-	std::lock_guard lg(mtx);
-	for(int i = 0 ; i < vProdList.size();i++)
+	std::lock_guard lg(productManager.mutex_);
+	for(int i = 0 ; i < productList.size();i++)
 	{
-	    response["products"][i]["id"] = vProdList[i].m_nId;
-       	    response["products"][i]["name"] = vProdList[i].m_sName;
-            response["products"][i]["price"] = vProdList[i].m_nPrice;
+	    response["products"][i]["id"] = productList[i].m_nId;
+       	    response["products"][i]["name"] = productList[i].m_sName;
+            response["products"][i]["price"] = productList[i].m_nPrice;
 	}
 	return response;
     });  
     
     CROW_ROUTE(app,"/add_products").methods("POST"_method)
-    ([](const crow::request& req){
+    ([&productManager](const crow::request& req){
         auto body = crow::json::load(req.body);
 	
  	if (!body)
@@ -55,16 +43,16 @@ int main() {
         if (!body.has("name") || !body.has("price"))
             return crow::response(400, "Missing name or price");
 	
-
+	std::cout << "Received POST request\n";
 	std::string name = body["name"].s();
 	int price = body["price"].i();
 
 			
 	{	
-		std::lock_guard ld(mtx);
-		product temp(next_id++,name,price);
-		vProdList.push_back(temp);
+		std::cout << "Inside Scope\n";
+		productManager.addProduct(name,price);
 	}	
+	std::cout << "Product added Received POST request\n";
 	crow::json::wvalue response;
     	response["message"] = "Added";
     	return crow::response(201, response);

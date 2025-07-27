@@ -33,6 +33,24 @@ int main() {
 	return response;
     });  
     
+
+    CROW_ROUTE(app, "/products/<int>").methods("GET"_method)([&productManager](int id) 
+    {
+	auto productOpt = productManager.getProductById(id);
+	if (!productOpt.has_value()) {
+        	return crow::response(404, "Product not found");
+    	}
+	const auto& product = productOpt.value();
+        crow::json::wvalue res;
+        res["id"] = product.m_nId;
+        res["name"] = product.m_sName;
+        res["price"] = product.m_nPrice;
+        return crow::response{res};
+
+    });  
+    
+
+
     CROW_ROUTE(app,"/add_products").methods("POST"_method)
     ([&productManager](const crow::request& req){
         auto body = crow::json::load(req.body);
@@ -57,6 +75,39 @@ int main() {
     	response["message"] = "Added";
     	return crow::response(201, response);
     });
+
+    CROW_ROUTE(app,"/update_product/<int>").methods("PUT"_method)
+    ([&productManager](const crow::request& req,int id){
+        auto body = crow::json::load(req.body);
+	
+        if ((!body) || !body.has("name") || !body.has("price"))
+            return crow::response(400, "Incorrect JSON Input");
+	
+	std::string name = body["name"].s();
+	int price = body["price"].i();
+	
+	bool updated = productManager.updateProduct(id,name,price);	
+		
+	if (!updated)
+		return crow::response(400,"Unable to Update");
+	else
+	{
+    		return crow::response(201,"PUT request successfull");
+	}
+	
+    });
+	
+    CROW_ROUTE(app,"/products/<int>").methods("DELETE"_method)
+    ([&productManager](int id){
+	bool deleted = productManager.deleteProduct(id);
+    	if (!deleted) 
+	{
+        	return crow::response(404, "Product not found");
+    	}
+
+    	return crow::response(200, "Product deleted successfully");
+    });
+
     app.port(8080).multithreaded().run();
 }
 

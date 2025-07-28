@@ -18,7 +18,7 @@ int main() {
     });
 
 
-    CROW_ROUTE(app, "/products")([&productManager] 
+    CROW_ROUTE(app, "/product")([&productManager] 
     {
         crow::json::wvalue response;
 	auto productList = productManager.getAllProducts();
@@ -34,7 +34,7 @@ int main() {
     });  
     
 
-    CROW_ROUTE(app, "/products/<int>").methods("GET"_method)([&productManager](int id) 
+    CROW_ROUTE(app, "/product/<int>").methods("GET"_method)([&productManager](int id) 
     {
 	auto productOpt = productManager.getProductById(id);
 	if (!productOpt.has_value()) {
@@ -51,17 +51,21 @@ int main() {
     
 
 
-    CROW_ROUTE(app,"/add_products").methods("POST"_method)
+    CROW_ROUTE(app,"/add_product").methods("POST"_method)
     ([&productManager](const crow::request& req){
         auto body = crow::json::load(req.body);
 	
- 	if (!body)
-            return crow::response(400, "Invalid JSON");
-
-        if (!body.has("name") || !body.has("price"))
-            return crow::response(400, "Missing name or price");
-	
+	if ( (!body) || 
+	      !body.has("name") || 
+	      !body.has("price") ||
+	      (body["name"].t() != crow::json::type::String) || 
+	      (body["price"].t() != crow::json::type::Number) )
+	{
+		return crow::response(400, "Incorrect JSON Input");
+	}
+            
 	std::cout << "Received POST request\n";
+
 	std::string name = body["name"].s();
 	int price = body["price"].i();
 
@@ -70,6 +74,7 @@ int main() {
 		std::cout << "Inside Scope\n";
 		productManager.addProduct(name,price);
 	}	
+
 	std::cout << "Product added Received POST request\n";
 	crow::json::wvalue response;
     	response["message"] = "Added";
@@ -80,11 +85,22 @@ int main() {
     ([&productManager](const crow::request& req,int id){
         auto body = crow::json::load(req.body);
 	
-        if ((!body) || !body.has("name") || !body.has("price"))
-            return crow::response(400, "Incorrect JSON Input");
-	
+        if ( (!body) || 
+	      !body.has("name") || 
+	      !body.has("price") ||
+	      (body["name"].t() != crow::json::type::String) || 
+	      (body["price"].t() != crow::json::type::Number) )
+	{
+		return crow::response(400, "Incorrect JSON Input");
+	}
+    	
 	std::string name = body["name"].s();
 	int price = body["price"].i();
+	
+	if (name.empty() || price < 0) 
+	{
+    		return crow::response(400, "Validation failed");
+	}
 	
 	bool updated = productManager.updateProduct(id,name,price);	
 		
@@ -97,7 +113,7 @@ int main() {
 	
     });
 	
-    CROW_ROUTE(app,"/products/<int>").methods("DELETE"_method)
+    CROW_ROUTE(app,"/product/<int>").methods("DELETE"_method)
     ([&productManager](int id){
 	bool deleted = productManager.deleteProduct(id);
     	if (!deleted) 
@@ -107,6 +123,12 @@ int main() {
 
     	return crow::response(200, "Product deleted successfully");
     });
+	
+    app.route_dynamic("/*").methods("GET"_method, "POST"_method, "PUT"_method, "DELETE"_method)
+	([](const crow::request& /*req*/) 
+	{
+    		return crow::response(404, "Route not found");
+	});
 
     app.port(8080).multithreaded().run();
 }

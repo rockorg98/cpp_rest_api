@@ -122,11 +122,7 @@ curl -X DELETE http://localhost:8080/product/1
 - Git-based version control
 - Project modularization
 
----
-
-## 📌 Roadmap
-
-This is part of a structured **28-day C++ Dev + DevOps roadmap**.  
+---  
 
 ## 📄 License
 

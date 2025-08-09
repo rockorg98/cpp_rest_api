@@ -130,6 +130,6 @@ int main() {
     		return crow::response(404, "Route not found");
 	});
 
-    app.port(8080).multithreaded().run();
+    app.port(8080).multithreaded().bindaddr("0.0.0.0").run();
 }
 

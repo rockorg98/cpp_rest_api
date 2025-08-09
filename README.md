@@ -31,6 +31,8 @@ cppRestApi/
 ├── README.md
 ├── LICENSE
 ├── .gitignore
+├── .dockerignore
+├── dockerfile
 └── build/                # Ignored build folder
 ```
 
@@ -59,6 +61,24 @@ make
 > Server will start at `http://localhost:8080`
 
 ---
+
+### Docker Setup (Day 10 Progress)
+
+**Build Docker Image**
+
+```bash
+docker build -t crow-api:latest .
+```
+
+**Run Docker Container**
+
+```bash
+docker run -p 8080:8080 crow-api:latest
+```
+
+The API server will be accessible at [http://localhost:8080](http://localhost:8080) inside the containerized environment.
+
+
 
 ## 🧪 API Endpoints
 

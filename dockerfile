@@ -6,13 +6,18 @@ FROM ubuntu:22.04 AS build
 
 # Install CMake and other build dependencies
 RUN apt-get update && apt-get install -y libasio-dev
-#RUN apt-get update && apt-get install -y cmake && cmake --version 
+
+
 RUN apt-get update && apt-get install -y \
     curl \
+    git \
     g++ \
     make \
     tar \
     && rm -rf /var/lib/apt/lists/*
+
+ 
+RUN git clone --branch v1.0+5 --depth 1 https://github.com/CrowCpp/crow.git /crow
 
 # Install CMake 3.22.1
 RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.tar.gz \

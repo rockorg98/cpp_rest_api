@@ -29,7 +29,7 @@ jobs:
       # Step 4: Test endpoint with curl
       - name: Test API health
         run: |
-          curl -f http://localhost:8080/ || (echo "API did not respond!" && exit 1)
+          curl -f http://localhost:8080/hello || (echo "API did not respond!" && exit 1)
 
       # Step 5: Clean up
       - name: Stop and remove container

@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
  
-RUN git clone --branch v1.0+5 --depth 1 https://github.com/CrowCpp/crow.git /crow
+RUN git clone --branch v1.0+5 --depth 1 https://github.com/CrowCpp/crow.git /app/crow
 
 # Install CMake 3.22.1
 RUN curl -L https://github.com/Kitware/CMake/releases/download/v3.22.1/cmake-3.22.1-linux-x86_64.tar.gz \

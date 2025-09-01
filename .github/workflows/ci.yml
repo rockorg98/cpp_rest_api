@@ -1,0 +1,38 @@
+name: C++ REST API CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Docker
+      - name: Build Docker image
+        run: |
+          docker build -t cpp_rest_api .
+
+      # Step 3: Run container
+      - name: Run container
+        run: |
+          docker run -d -p 8080:8080 --name cpp_rest_api_container cpp_rest_api
+          sleep 5   # wait for the app to boot
+
+      # Step 4: Test endpoint with curl
+      - name: Test API health
+        run: |
+          curl -f http://localhost:8080/ || (echo "API did not respond!" && exit 1)
+
+      # Step 5: Clean up
+      - name: Stop and remove container
+        run: |
+          docker stop cpp_rest_api_container
+          docker rm cpp_rest_api_container
